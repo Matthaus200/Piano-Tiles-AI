@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title th:text="${musica.titulo} + ' - Piano Tiles AI'">Jogar</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body class="jogo">
+
+<div id="topo-jogo"><a class="botao secundario" th:href="@{/}">← Menu</a></div>
+
+<div id="palco"
+     th:attr="data-musica-id=${musica.id},data-titulo=${musica.titulo},data-bpm=${musica.bpm},data-dificuldade=${musica.dificuldade}">
+    <canvas id="tela"></canvas>
+</div>
+
+<!-- Antes de começar -->
+<div class="sobreposicao" id="pre-jogo" style="display:flex">
+    <div class="caixa">
+        <h2 th:text="${musica.titulo}">Música</h2>
+        <p>
+            <span th:text="${musica.genero}">Gênero</span> ·
+            <span th:text="${musica.bpm} + ' BPM'">BPM</span> ·
+            <span class="estrelas" th:text="${musica.estrelasDificuldade}">★★</span>
+        </p>
+        <p th:if="${musica.descricao != null and !#strings.isEmpty(musica.descricao)}" th:text="${musica.descricao}"></p>
+        <input id="nome-jogador" placeholder="Seu nome" maxlength="20">
+        <div class="botoes">
+            <button id="botao-comecar">Começar</button>
+        </div>
+        <p class="dica-teclas">Clique/toque nos tiles pretos ou use as teclas <b>D F J K</b>.<br>
+            Tiles com bolinha amarela são longos: segure até o fim.</p>
+
+        <div th:unless="${#lists.isEmpty(ranking)}" style="text-align:left;margin-top:12px">
+            <b>🏆 Top desta música</b>
+            <table>
+                <tr th:each="p, i : ${ranking}">
+                    <td th:text="${i.count} + 'º'">1º</td>
+                    <td th:text="${p.nomeJogador}">Nome</td>
+                    <td th:text="${p.pontos} + '/' + ${p.totalTiles}">10/40</td>
+                    <td class="estrelas" th:text="${p.estrelasTexto}">★☆☆</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Fim de jogo -->
+<div class="sobreposicao" id="fim-jogo">
+    <div class="caixa">
+        <h2 id="fim-titulo">Fim de jogo</h2>
+        <div class="grandes" id="fim-estrelas">☆☆☆</div>
+        <p id="fim-placar"></p>
+        <div class="botoes">
+            <button id="botao-repetir">Jogar de novo</button>
+            <button class="secundario" id="botao-dicas">Dicas da IA</button>
+            <a class="botao secundario" th:href="@{/}">Menu</a>
+        </div>
+        <div class="carregando" id="carregando-dicas"><span class="spinner"></span>O treinador está analisando...</div>
+        <div class="ia-texto" id="texto-dicas"></div>
+    </div>
+</div>
+
+<script th:src="@{/js/jogo.js}"></script>
+</body>
+</html>

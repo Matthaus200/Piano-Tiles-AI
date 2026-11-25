@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Piano Tiles AI</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body>
+<div class="container">
+
+    <h1>🎹 Piano Tiles AI</h1>
+    <div class="sub">Toque só nos tiles pretos e não deixe nenhum escapar. A IA compõe músicas novas e te dá dicas!</div>
+
+    <div class="alerta sucesso" th:if="${sucesso}" th:text="${sucesso}"></div>
+    <div class="alerta erro" th:if="${erro}" th:text="${erro}"></div>
+
+    <!-- Jogador -->
+    <div class="card">
+        <h2>👤 Jogador</h2>
+        <form class="linha" th:action="@{/historico}" method="get" id="form-historico">
+            <input class="cresce" id="nome-jogador" name="jogador" placeholder="Digite seu nome" maxlength="20" required>
+            <button type="submit" class="secundario">Meu histórico + Treinador IA</button>
+        </form>
+    </div>
+
+    <!-- Lista de músicas -->
+    <div class="card">
+        <h2>🎵 Músicas</h2>
+        <div th:if="${#lists.isEmpty(musicas)}" class="vazio">Nenhuma música cadastrada.</div>
+
+        <div class="musica" th:each="m : ${musicas}" th:classappend="${novaMusicaId == m.id} ? 'nova'">
+            <div class="info">
+                <b th:text="${m.titulo}">Título</b>
+                <span class="badge" th:if="${m.geradaPorIA}">IA</span><br>
+                <small>
+                    <span th:text="${m.genero}">Gênero</span> ·
+                    <span th:text="${m.bpm} + ' BPM'">120 BPM</span> ·
+                    <span class="estrelas" th:text="${m.estrelasDificuldade}">★★☆☆☆</span>
+                </small>
+                <div class="descricao" th:if="${m.descricao != null and !#strings.isEmpty(m.descricao)}"
+                     th:text="${m.descricao}"></div>
+            </div>
+            <a class="botao" th:href="@{/jogar/{id}(id=${m.id})}">Jogar</a>
+            <form th:if="${m.geradaPorIA}" th:action="@{/musicas/{id}/excluir(id=${m.id})}" method="post"
+                  onsubmit="return confirm('Excluir esta música e o ranking dela?')">
+                <button type="submit" class="secundario" title="Excluir">✕</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Compositor IA -->
+    <div class="card">
+        <h2>✨ Compositor IA</h2>
+        <p class="sub" style="text-align:left;margin-bottom:10px">
+            Descreva a música e a IA cria uma fase nova, que fica salva no banco.
+        </p>
+        <form th:action="@{/musicas/gerar}" method="post" id="form-gerar">
+            <input name="pedido" maxlength="300" required
+                   placeholder="Ex: trilha de filme de aventura, lullaby calma, música de chefão de videogame...">
+            <div class="linha" style="margin-top:8px">
+                <select name="dificuldade" class="cresce">
+                    <option value="1">Fácil</option>
+                    <option value="2" selected>Normal</option>
+                    <option value="3">Difícil</option>
+                    <option value="4">Expert</option>
+                    <option value="5">Insano</option>
+                </select>
+                <button type="submit" id="botao-gerar">Gerar fase</button>
+            </div>
+            <div class="carregando" id="carregando-gerar">
+                <span class="spinner"></span>A IA está compondo... pode levar alguns segundos.
+            </div>
+        </form>
+    </div>
+
+    <!-- Ranking -->
+    <div class="card">
+        <h2>🏆 Ranking geral</h2>
+        <div th:if="${#lists.isEmpty(ranking)}" class="vazio">Ninguém jogou ainda. Seja o primeiro!</div>
+        <table th:unless="${#lists.isEmpty(ranking)}">
+            <tr><th>#</th><th>Jogador</th><th>Música</th><th>Tiles</th><th>Estrelas</th></tr>
+            <tr th:each="p, i : ${ranking}">
+                <td th:text="${i.count}">1</td>
+                <td th:text="${p.nomeJogador}">Nome</td>
+                <td th:text="${p.musica.titulo}">Música</td>
+                <td th:text="${p.pontos} + '/' + ${p.totalTiles}">10/40</td>
+                <td class="estrelas" th:text="${p.estrelasTexto}">★★☆</td>
+            </tr>
+        </table>
+    </div>
+
+    <p class="sub"><small>POO 2 · Univille · Spring Boot + Spring AI + H2</small></p>
+</div>
+
+<script>
+    // Guarda o nome do jogador no navegador para usar no jogo.
+    const campoNome = document.getElementById('nome-jogador');
+    campoNome.value = localStorage.getItem('pt-jogador') || '';
+    campoNome.addEventListener('input', () => localStorage.setItem('pt-jogador', campoNome.value.trim()));
+
+    // Mostra o "carregando" enquanto a IA compõe.
+    document.getElementById('form-gerar').addEventListener('submit', () => {
+        document.getElementById('botao-gerar').disabled = true;
+        document.getElementById('carregando-gerar').style.display = 'block';
+    });
+</script>
+</body>
+</html>

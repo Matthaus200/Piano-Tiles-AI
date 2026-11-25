@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Histórico - Piano Tiles AI</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body>
+<div class="container">
+    <p><a th:href="@{/}">← Voltar ao menu</a></p>
+
+    <h1>📈 Histórico de <span th:text="${jogador}">Jogador</span></h1>
+
+    <div class="card">
+        <h2>🧠 Treinador IA</h2>
+        <p>A IA lê suas últimas partidas salvas no banco e sugere como melhorar.</p>
+        <button id="botao-treinador" th:attr="data-jogador=${jogador}">Analisar meu desempenho</button>
+        <div class="carregando" id="carregando-treinador"><span class="spinner"></span>Analisando suas partidas...</div>
+        <div class="ia-texto" id="resposta-treinador"></div>
+    </div>
+
+    <div class="card">
+        <h2>🎮 Últimas partidas</h2>
+        <div th:if="${#lists.isEmpty(partidas)}" class="vazio">
+            Nenhuma partida encontrada para este nome. Volte ao menu e jogue uma música!
+        </div>
+        <table th:unless="${#lists.isEmpty(partidas)}">
+            <tr><th>Data</th><th>Música</th><th>Tiles</th><th>Combo</th><th>Estrelas</th><th>Resultado</th></tr>
+            <tr th:each="p : ${partidas}">
+                <td th:text="${#temporals.format(p.dataHora, 'dd/MM HH:mm')}">25/11 12:00</td>
+                <td th:text="${p.musica.titulo}">Música</td>
+                <td th:text="${p.pontos} + '/' + ${p.totalTiles} + ' (' + ${p.percentual} + '%)'">10/40</td>
+                <td th:text="${p.comboMaximo}">5</td>
+                <td class="estrelas" th:text="${p.estrelasTexto}">★☆☆</td>
+                <td th:text="${p.concluida} ? '✅ Completou' : '❌ Errou'">Errou</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script>
+    const botao = document.getElementById('botao-treinador');
+    botao.addEventListener('click', async () => {
+        const saida = document.getElementById('resposta-treinador');
+        const carregando = document.getElementById('carregando-treinador');
+        botao.disabled = true;
+        carregando.style.display = 'block';
+        saida.textContent = '';
+        try {
+            const resp = await fetch('/api/treinador', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({jogador: botao.dataset.jogador})
+            });
+            const dados = await resp.json();
+            saida.textContent = resp.ok ? dados.analise : ('Erro: ' + dados.mensagem);
+        } catch (e) {
+            saida.textContent = 'Erro ao falar com a IA: ' + e.message;
+        }
+        carregando.style.display = 'none';
+        botao.disabled = false;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Nunca levar a chave nem o banco local para dentro da imagem
+chave.properties
+.env
+data/
+target/
+.idea/
+.vscode/
+*.iml

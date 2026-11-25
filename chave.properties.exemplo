@@ -1,0 +1,3 @@
+# Copie este arquivo para "chave.properties" (na mesma pasta) e coloque sua chave do OpenRouter.
+# O arquivo chave.properties está no .gitignore, então ele NÃO vai para o GitHub.
+spring.ai.openai.api-key=COLE_SUA_CHAVE_AQUI
